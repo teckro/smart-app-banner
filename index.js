@@ -1,5 +1,3 @@
-'use strict';
-
 var extend = require('object-assign');
 var q = require('component-query');
 var doc = require('get-doc');
@@ -15,7 +13,7 @@ var root = doc && doc.documentElement;
 // platform dependent functionality
 var mixins = {
 	ios: {
-		appMeta: 'apple-itunes-app',
+		appMeta: 'apple-itunes-app-custom',
 		iconRels: ['apple-touch-icon-precomposed', 'apple-touch-icon'],
 		getStoreLink: function () {
 			return 'https://itunes.apple.com/' + this.options.appStoreLanguage + '/app/id' + this.appId + "?mt=8";
@@ -65,7 +63,12 @@ var SmartBanner = function (options) {
 	} else if (agent.os.name === 'Windows Phone' || agent.os.name === 'Windows Mobile') {
 		this.type = 'windows';
 	} else if (agent.os.name === 'iOS') {
-		this.type = 'ios';
+    //iOS Safari >= 6 has native support for SmartAppBanner
+    if (parseInt(agent.os.version) < 6) {
+      this.type = 'ios';
+    } else if (agent.browser.name !== 'Safari' && agent.browser.name !== 'Mobile Safari') {
+      this.type = 'ios';
+    }
 	} else if (agent.os.name === 'Android') {
 		this.type = 'android';
 	}
@@ -89,7 +92,7 @@ var SmartBanner = function (options) {
 	var userDismissed = cookie.get(this.appId + '-smartbanner-closed');
 	var userInstalled = cookie.get(this.appId + '-smartbanner-installed');
 
-	if (isMobileSafari || runningStandAlone || userDismissed || userInstalled) {
+	if (runningStandAlone || userDismissed || userInstalled) {
 		return;
 	}
 
@@ -97,7 +100,7 @@ var SmartBanner = function (options) {
 
 	// - If we dont have app id in meta, dont display the banner
 	// - If opened in safari IOS, dont display the banner
-	if (!this.appId && agent.os.name === 'IOS' && agent.browser.name === 'Safari') {
+	if (!this.appId || (agent.os.name === 'IOS' && agent.browser.name === 'Safari')) {
 		return;
 	}
 
@@ -136,7 +139,6 @@ SmartBanner.prototype = {
 							'<div class="smartbanner-info">' +
 								'<div class="smartbanner-title">' + this.options.title + '</div>' +
 								'<div>' + this.options.author + '</div>' +
-								'<span>' + inStore + '</span>' +
 							'</div>' +
 							'<a href="' + link + '" class="smartbanner-button">' +
 								'<span class="smartbanner-button-text">' + this.options.button + '</span>' +
@@ -205,3 +207,4 @@ SmartBanner.prototype = {
 };
 
 module.exports = SmartBanner;
+
