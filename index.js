@@ -92,7 +92,7 @@ var SmartBanner = function (options) {
 	var userDismissed = cookie.get(this.appId + '-smartbanner-closed');
 	var userInstalled = cookie.get(this.appId + '-smartbanner-installed');
 
-	if (runningStandAlone || userDismissed || userInstalled) {
+	if (isMobileSafari || runningStandAlone || userDismissed || userInstalled) {
 		return;
 	}
 
@@ -100,7 +100,7 @@ var SmartBanner = function (options) {
 
 	// - If we dont have app id in meta, dont display the banner
 	// - If opened in safari IOS, dont display the banner
-	if (!this.appId && (agent.os.name === 'IOS' && agent.browser.name === 'Safari')) {
+	if (!this.appId || (agent.os.name === 'IOS' && agent.browser.name === 'Safari')) {
 		return;
 	}
 
